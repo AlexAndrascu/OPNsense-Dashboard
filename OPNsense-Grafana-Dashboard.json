@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -21,13 +24,16 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
-  "iteration": 1645431848722,
+  "id": 1,
   "links": [],
   "liveNow": true,
   "panels": [
     {
       "collapsed": false,
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${dataSource}"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -36,11 +42,21 @@
       },
       "id": 22,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Hardware",
       "type": "row"
     },
     {
       "datasource": {
+        "type": "influxdb",
         "uid": "${dataSource}"
       },
       "fieldConfig": {
@@ -95,10 +111,14 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
-          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -20s)\r\n  |> filter(fn: (r) =>\r\n    r._measurement == \"system\" and\r\n    r._field == \"n_users\"\r\n  )\r\n  |> keep(columns: [\"_value\"])\r\n  |> last()",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
+          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -20s)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"system\" and\r\n    r._field == \"n_users\"\r\n  )\r\n  |> keep(columns: [\"_value\"])\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -107,6 +127,7 @@
     },
     {
       "datasource": {
+        "type": "influxdb",
         "uid": "${dataSource}"
       },
       "fieldConfig": {
@@ -160,10 +181,14 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
-          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -20s)\r\n  |> filter(fn: (r) =>\r\n    r._measurement == \"cpu\" and\r\n    r._field == \"usage_idle\" and\r\n    r.cpu == \"cpu-total\"\r\n  )\r\n  |> map(fn: (r) => ({\r\n        r with\r\n        _value: r._value * -1.0 + 100.0\r\n      })\r\n    )\r\n  |> keep(columns: [\"_value\"])\r\n  |> last()",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
+          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -20s)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"cpu\" and\r\n    r._field == \"usage_idle\" and\r\n    r.cpu == \"cpu-total\"\r\n  )\r\n  |> map(fn: (r) => ({\r\n        r with\r\n        _value: r._value * -1.0 + 100.0\r\n      })\r\n    )\r\n  |> keep(columns: [\"_value\"])\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -207,7 +232,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -217,6 +242,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"cpu\" and\r\n    r._field == \"usage_idle\")\r\n  |> map(fn: (r) => ({\r\n        r with\r\n        _value: r._value * -1.0 + 100.0\r\n      })\r\n    )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> drop(columns: [\"host\"])",
           "refId": "A"
         }
@@ -295,6 +323,7 @@
             "align": "center",
             "displayMode": "auto",
             "filterable": false,
+            "inspect": false,
             "minWidth": 1
           },
           "decimals": 0,
@@ -331,9 +360,12 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -30s)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"processes\" and\r\n    r._field =~ /running|idle|sleeping|wait|blocked|zombies/\r\n  )\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))\r\n  |> last()",
           "refId": "A"
         }
@@ -417,7 +449,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -427,6 +459,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"system\" and\r\n    r._field =~ /load1|load5|load15/\r\n  )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
           "refId": "A"
         }
@@ -466,6 +501,7 @@
     },
     {
       "datasource": {
+        "type": "influxdb",
         "uid": "${dataSource}"
       },
       "fieldConfig": {
@@ -523,10 +559,14 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
-          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -20s)\r\n  |> filter(fn: (r) =>\r\n    r._measurement == \"system\" and\r\n    r._field == \"uptime_format\"\r\n  )\r\n  |> keep(columns: [\"_value\"])\r\n  |> last()\r\n",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
+          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -20s)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"system\" and\r\n    r._field == \"uptime_format\"\r\n  )\r\n  |> keep(columns: [\"_value\"])\r\n  |> last()\r\n",
           "refId": "A"
         }
       ],
@@ -545,6 +585,7 @@
           "custom": {
             "align": "center",
             "displayMode": "auto",
+            "inspect": false,
             "minWidth": 1
           },
           "decimals": 1,
@@ -583,9 +624,12 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -30s)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"pf\" and\r\n    r._field =~ /match|state-mismatch|state-insert/\r\n  )\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))\r\n  |> last()",
           "refId": "A"
         }
@@ -631,6 +675,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": {
+        "type": "influxdb",
         "uid": "${dataSource}"
       },
       "decimals": 2,
@@ -669,7 +714,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -679,8 +724,12 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
           "hide": false,
-          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.device != \"devfs\" and\r\n    r.device =~ /^${Disk:regex}$/ and\r\n    r._measurement == \"disk\" and\r\n    r._field == \"used_percent\"\r\n  )",
+          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.device != \"devfs\" and\r\n    r.device =~ /^${Disk:regex}$/ and\r\n    r._measurement == \"disk\" and\r\n    r._field == \"used_percent\" \r\n  )",
           "refId": "A"
         }
       ],
@@ -769,7 +818,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -779,6 +828,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"mem\" and\r\n    r._field == \"used_percent\"\r\n  )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))\r\n  ",
           "refId": "A"
         }
@@ -866,7 +918,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -876,6 +928,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.sensor =~ /^${Sensor:regex}$/ and\r\n    r._measurement == \"temperature\" and\r\n    r._field == \"degrees\"\r\n  )\r\n  |> aggregateWindow(every:10s, fn: last)",
           "refId": "A"
         }
@@ -922,6 +977,10 @@
     },
     {
       "collapsed": false,
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${dataSource}"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -930,11 +989,21 @@
       },
       "id": 55,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Firewall",
       "type": "row"
     },
     {
       "datasource": {
+        "type": "elasticsearch",
         "uid": "${ESdataSource}"
       },
       "fieldConfig": {
@@ -991,7 +1060,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
           "bucketAggs": [
@@ -1007,6 +1076,10 @@
               "type": "date_histogram"
             }
           ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${ESdataSource}"
+          },
           "metrics": [
             {
               "$$hashKey": "object:12",
@@ -1015,7 +1088,7 @@
               "type": "count"
             }
           ],
-          "query": "interface:$iface AND src_ip:$src_ip AND dst_port:$dst_port AND action:\"block\"",
+          "query": "interface:$iface AND action:\"block\"",
           "refId": "A",
           "target": "",
           "timeField": "timestamp"
@@ -1034,6 +1107,7 @@
         "#8F3BB8"
       ],
       "datasource": {
+        "type": "elasticsearch",
         "uid": "${ESdataSource}"
       },
       "decimals": 0,
@@ -1062,50 +1136,53 @@
       "stickyLabels": false,
       "tableQueryOptions": {
         "geohashField": "geohash",
-        "latitudeField": "latitude",
-        "longitudeField": "longitude",
-        "metricField": "metric",
-        "queryType": "geohash"
+        "labelField": "src_ip_geo_country",
+        "latitudeField": "src_ip_lat",
+        "longitudeField": "src_ip_long",
+        "metricField": "Count",
+        "queryType": "coordinates"
       },
       "targets": [
         {
           "alias": "",
           "bucketAggs": [
             {
-              "$$hashKey": "object:974",
-              "fake": true,
-              "field": "src_ip_geo_country",
-              "id": "3",
+              "field": "src-ip-geo-country",
+              "id": "2",
               "settings": {
-                "min_doc_count": 1,
-                "order": "asc",
-                "orderBy": "_count",
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
                 "size": "0"
               },
               "type": "terms"
             },
             {
-              "$$hashKey": "object:975",
               "field": "timestamp",
-              "id": "2",
+              "id": "3",
               "settings": {
                 "interval": "auto",
-                "min_doc_count": 0,
-                "trimEdges": 0
+                "min_doc_count": "0",
+                "timeZone": "utc",
+                "trimEdges": "0"
               },
               "type": "date_histogram"
             }
           ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${ESdataSource}"
+          },
           "dsType": "elasticsearch",
+          "hide": false,
           "metrics": [
             {
-              "$$hashKey": "object:972",
-              "field": "select field",
+              "hide": false,
               "id": "1",
               "type": "count"
             }
           ],
-          "query": "interface:$iface AND src_ip:$src_ip AND action:\"block\"",
+          "query": "interface:$iface AND src-ip:$src_ip AND action:\"block\" AND source:$Host",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -1119,6 +1196,7 @@
     },
     {
       "datasource": {
+        "type": "elasticsearch",
         "uid": "${ESdataSource}"
       },
       "fieldConfig": {
@@ -1160,20 +1238,20 @@
           "calcs": [
             "first"
           ],
-          "fields": "/^src_ip$/",
+          "fields": "/^src\\-ip$/",
           "values": true
         },
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
           "bucketAggs": [
             {
               "$$hashKey": "object:120",
               "fake": true,
-              "field": "src_ip",
+              "field": "src-ip",
               "id": "3",
               "settings": {
                 "min_doc_count": 1,
@@ -1184,6 +1262,10 @@
               "type": "terms"
             }
           ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${ESdataSource}"
+          },
           "dsType": "elasticsearch",
           "metrics": [
             {
@@ -1193,7 +1275,7 @@
               "type": "count"
             }
           ],
-          "query": "action:\"block\" AND interface:$iface AND src_ip:$src_ip AND dst_port:$dst_port",
+          "query": "action:\"block\" AND interface:$iface AND src-ip:$src_ip AND dst-port:$dst_port and source:$Host",
           "refId": "A",
           "target": "",
           "timeField": "timestamp"
@@ -1205,6 +1287,7 @@
     },
     {
       "datasource": {
+        "type": "elasticsearch",
         "uid": "${ESdataSource}"
       },
       "fieldConfig": {
@@ -1239,6 +1322,7 @@
           "calcs": [],
           "displayMode": "table",
           "placement": "right",
+          "showLegend": true,
           "values": [
             "value"
           ]
@@ -1252,7 +1336,8 @@
           "values": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
@@ -1262,7 +1347,7 @@
             {
               "$$hashKey": "object:1775",
               "fake": true,
-              "field": "dst_port",
+              "field": "dst-port",
               "id": "3",
               "settings": {
                 "min_doc_count": 1,
@@ -1284,6 +1369,10 @@
               "type": "date_histogram"
             }
           ],
+          "datasource": {
+            "type": "elasticsearch",
+            "uid": "${ESdataSource}"
+          },
           "dsType": "elasticsearch",
           "metrics": [
             {
@@ -1293,7 +1382,7 @@
               "type": "count"
             }
           ],
-          "query": "interface:$iface AND src_ip:$src_ip AND dst_port:$dst_port AND action:\"block\"",
+          "query": "interface:$iface AND src-ip:$src_ip AND dst-port:$dst_port AND action:\"block\" AND source:$Host",
           "refId": "A",
           "target": "",
           "timeField": "timestamp"
@@ -1339,6 +1428,7 @@
           "calcs": [],
           "displayMode": "table",
           "placement": "right",
+          "showLegend": true,
           "values": [
             "value"
           ]
@@ -1352,7 +1442,8 @@
           "values": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
@@ -1361,7 +1452,7 @@
             {
               "$$hashKey": "object:1049",
               "fake": true,
-              "field": "protocol_name",
+              "field": "protocol-name",
               "id": "3",
               "settings": {
                 "min_doc_count": 1,
@@ -1396,7 +1487,7 @@
               "type": "count"
             }
           ],
-          "query": "interface:$iface AND src_ip:$src_ip AND action:\"block\"",
+          "query": "interface:$iface AND src-ip:$src_ip AND action:\"block\" AND source:$Host",
           "refId": "A",
           "timeField": "timestamp"
         }
@@ -1406,6 +1497,10 @@
     },
     {
       "collapsed": false,
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${dataSource}"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1414,6 +1509,15 @@
       },
       "id": 24,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Network Stats",
       "type": "row"
     },
@@ -1423,6 +1527,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": {
+        "type": "influxdb",
         "uid": "${dataSource}"
       },
       "fill": 1,
@@ -1453,7 +1558,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1463,6 +1568,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.gateway_name =~ /^${Gateway:regex}$/ and\r\n    r._measurement == \"gateways\" and\r\n    r._field == \"delay\"\r\n  )",
           "refId": "A"
         }
@@ -1521,6 +1630,7 @@
             "align": "center",
             "displayMode": "color-text",
             "filterable": true,
+            "inspect": false,
             "minWidth": 1
           },
           "mappings": [
@@ -1546,7 +1656,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#ffffff",
+                "color": "text",
                 "value": null
               }
             ]
@@ -1606,7 +1716,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
           "datasource": {
@@ -1680,7 +1790,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1690,6 +1800,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.gateway_name =~ /^${Gateway:regex}$/ and\r\n    r._measurement == \"gateways\" and\r\n    r._field == \"loss\"\r\n  )",
           "refId": "A"
         }
@@ -1751,6 +1864,7 @@
             "align": "center",
             "displayMode": "color-text",
             "filterable": true,
+            "inspect": false,
             "minWidth": 1
           },
           "mappings": [
@@ -1774,7 +1888,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#ffffff",
+                "color": "text",
                 "value": null
               }
             ]
@@ -1805,14 +1919,14 @@
           }
         ]
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${dataSource}"
           },
-          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -30s)\r\n  |> filter(fn: (r) =>\r\n    r._measurement == \"gateways\" and\r\n    r._field =~ /gwdescr|source|monitor|status|gateway_name|interface/\r\n    )\r\n  |> last()\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
+          "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -30s)\r\n  |> filter(fn: (r) =>\r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"gateways\" and\r\n    r._field =~ /gwdescr|source|monitor|status|gateway_name|interface/\r\n    )\r\n  |> last()\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
           "refId": "A"
         }
       ],
@@ -1856,6 +1970,10 @@
     },
     {
       "collapsed": false,
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${dataSource}"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1865,6 +1983,15 @@
       "id": 30,
       "panels": [],
       "repeat": "WAN",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "WAN Interface - $WAN",
       "type": "row"
     },
@@ -1882,6 +2009,7 @@
             "align": "center",
             "displayMode": "color-text",
             "filterable": true,
+            "inspect": false,
             "minWidth": 1
           },
           "mappings": [
@@ -1907,7 +2035,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#fffffffc",
+                "color": "text",
                 "value": null
               },
               {
@@ -1946,7 +2074,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
           "datasource": {
@@ -2022,7 +2150,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -2032,6 +2160,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => \r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.interface =~ /^${WAN:regex}$/ and \r\n    r._measurement == \"net\" and\r\n    r._field =~ /bytes_recv|bytes_sent/\r\n  )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> derivative(unit:1s)\r\n  |> map(fn: (r) => ({\r\n      r with\r\n      _value: r._value * 8.0\r\n    })\r\n  )\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
           "refId": "A"
         }
@@ -2149,9 +2280,12 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -30s)\r\n  |> filter(fn: (r) => \r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.interface =~ /^${WAN:regex}$/ and\r\n    r._measurement == \"net\" and\r\n    r._field =~ /bytes_recv|bytes_sent/\r\n  )\r\n  |> derivative(unit:1s)\r\n  |> map(fn: (r) => ({\r\n      r with\r\n      _value: r._value * 8.0\r\n    })\r\n  )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))\r\n  |> last()",
           "refId": "A"
         }
@@ -2240,9 +2374,12 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -30d)\r\n  |> filter(fn: (r) => \r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.interface =~ /^${WAN:regex}$/ and\r\n    r._measurement == \"net\" and\r\n    r._field =~ /bytes_recv|bytes_sent/\r\n  )\r\n  |> aggregateWindow(every: 1h, fn: last)\r\n  |> difference(nonNegative: true)\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
           "refId": "A"
         }
@@ -2313,7 +2450,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.2.10",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -2323,6 +2460,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.interface =~ /^${WAN:regex}$/ and \r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"net\" and\r\n    r._field =~ /packets_recv|packets_sent/\r\n  )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> derivative(unit:1s)\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
           "refId": "A"
         }
@@ -2382,6 +2522,10 @@
     },
     {
       "collapsed": false,
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${dataSource}"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2391,6 +2535,15 @@
       "id": 48,
       "panels": [],
       "repeat": "LAN",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${dataSource}"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "LAN Interface  - $LAN",
       "type": "row"
     },
@@ -2433,8 +2586,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#fffffffc",
-                "value": null
+                "color": "text"
               },
               {
                 "color": "red",
@@ -2557,6 +2709,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => \r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.interface =~ /^${LAN:regex}$/ and \r\n    r._measurement == \"net\" and\r\n    r._field =~ /bytes_recv|bytes_sent/\r\n  )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> derivative(unit:1s)\r\n  |> map(fn: (r) => ({\r\n      r with\r\n      _value: r._value * 8.0\r\n    })\r\n  )\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
           "refId": "A"
         }
@@ -2581,7 +2736,11 @@
           "id": "organize",
           "options": {
             "excludeByName": {},
-            "indexByName": {},
+            "indexByName": {
+              "Time": 0,
+              "bytes_recv": 1,
+              "bytes_sent": 2
+            },
             "renameByName": {
               "bytes_recv": "Bits Recv",
               "bytes_sent": "Bits Sent"
@@ -2641,8 +2800,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2676,6 +2834,9 @@
       "pluginVersion": "8.3.3",
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -1m)\r\n  |> filter(fn: (r) => \r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.interface =~ /^${LAN:regex}$/ and\r\n    r._measurement == \"net\" and\r\n    r._field =~ /bytes_recv|bytes_sent/\r\n  )\r\n  |> derivative(unit:1s)\r\n  |> map(fn: (r) => ({\r\n      r with\r\n      _value: r._value * 8.0\r\n    })\r\n  )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))\r\n  |> last()",
           "refId": "A"
         }
@@ -2735,8 +2896,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -2771,6 +2931,9 @@
       "pluginVersion": "8.3.3",
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: -30d)\r\n  |> filter(fn: (r) => \r\n    r.host =~ /^${Host:regex}$/ and\r\n    r.interface =~ /^${LAN:regex}$/ and\r\n    r._measurement == \"net\" and\r\n    r._field =~ /bytes_recv|bytes_sent/\r\n  )\r\n  |> aggregateWindow(every: 1h, fn: last)\r\n  |> difference(nonNegative: true)\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
           "refId": "A"
         }
@@ -2791,8 +2954,8 @@
             "excludeByName": {},
             "indexByName": {
               "Time": 0,
-              "bytes_recv": 2,
-              "bytes_sent": 1
+              "bytes_recv": 1,
+              "bytes_sent": 2
             },
             "renameByName": {
               "bytes_recv": "Bytes Recv - This Month",
@@ -2857,6 +3020,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "uid": "${dataSource}"
+          },
           "query": "from(bucket: v.defaultBucket)\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) =>\r\n    r.interface =~ /^${LAN:regex}$/ and \r\n    r.host =~ /^${Host:regex}$/ and\r\n    r._measurement == \"net\" and\r\n    r._field =~ /packets_recv|packets_sent/\r\n  )\r\n  |> aggregateWindow(every: 10s, fn: last)\r\n  |> derivative(unit:1s)\r\n  |> map(fn: (r) => ({_value:r._value, _time:r._time, _field:r._field}))",
           "refId": "A"
         }
@@ -2918,7 +3084,7 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 34,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [
     "OPNsense",
@@ -2966,7 +3132,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -3037,7 +3203,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -3064,7 +3230,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -3090,7 +3256,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -3121,7 +3287,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -3150,7 +3316,7 @@
       {
         "allValue": "*",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -3179,7 +3345,7 @@
       {
         "allValue": "*",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -3204,6 +3370,35 @@
         "skipUrlSync": false,
         "sort": 0,
         "type": "query"
+      },
+      {
+        "allValue": "*",
+        "current": {
+          "selected": false,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "elasticsearch",
+          "uid": "${ESdataSource}"
+        },
+        "definition": "{\"find\": \"terms\", \"field\": \"dst_ip\", \"query\": \"interface:$iface\", \"timestamp\": {\n\"timestamp\" : \"now-$__Interval_ms\"\n}}",
+        "hide": 0,
+        "includeAll": true,
+        "label": "FW_Destination IP",
+        "multi": true,
+        "name": "dst_ip",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"dst_ip\", \"query\": \"interface:$iface\", \"timestamp\": {\n\"timestamp\" : \"now-$__Interval_ms\"\n}}",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
       }
     ]
   },
@@ -3220,6 +3415,6 @@
   "timezone": "",
   "title": "OPNsense",
   "uid": "suTmk8c7k",
-  "version": 372,
+  "version": 7,
   "weekStart": ""
 }

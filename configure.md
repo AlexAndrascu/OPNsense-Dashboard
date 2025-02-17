@@ -1,8 +1,9 @@
 - [Docker](#docker)
 - [Configuring InfluxDB](#configuring-influxdb)
 - [Configuring Telegraf](#configuring-telegraf)
-- * [For previous users](#for-previous-users)
+  * [For previous users](#for-previous-users)
   * [Install the plugin and configure options](#install-the-plugin-and-configure-options)
+  * [Alternative OPNSense Configuration via Ansible](#alternative-opnsense-configuration-via-ansible)
   * [Add telegraf to sudoers](#add-telegraf-to-sudoers)
   * [Telegraf Plugins](#telegraf-plugins)
 - [Configuring Graylog](#configuring-graylog)
@@ -20,15 +21,13 @@
 - [Troubleshooting](#troubleshooting)
   * [Telegraf Plugins](#telegraf-plugins-1)
   * [Telegraf Troubleshooting](#telegraf-troubleshooting)
-  * [Telegraf Config (Paste in to [agent] section)](#telegraf-config-paste-in-to-agent-section)
-  * [Restarting Telegraf](#restarting-telegraf)
   * [InfluxDB](#influxdb)
   * [View measurements](#view-measurements)
   * [View field values](#view-field-values)
   * [How to drop an InfluxDB v2 measurement](#how-to-drop-an-influxdb-v2-measurement)
   * [Learn more about Flux queries](#learn-more-about-flux-queries)
   * [Suricata Troubleshooting](#suricata-troubleshooting)
-
+  * [Map Issues](#map-issues)
 
 ## Docker
 
@@ -65,16 +64,17 @@ Delete the line that starts with telegraf in /usr/local/etc/sudoers.
 
 Once those are done you can continue with the new configuration.
 
+
 ### Install the plugin and configure options
 Install the Telegraf plugin on OPNsense, to do so, navigate to System -> Firmware -> Plugins -> Search for telegraf, and click the plus icon to install.
 
-![](https://i.imgur.com/vowGSSx.png)
+![](https://www.bsmithio.com/post/opnsense-dashboard/plugin.png)
 
 Navigate to Services -> Telegraf -> Input
 
 Enable Network and PF Inputs.
 
-![](https://i.imgur.com/WskfVlS.png)
+![](https://www.bsmithio.com/post/opnsense-dashboard/pfinput.png)
 
 Then click Save.
 
@@ -90,9 +90,14 @@ Influx v2 Organization: Your InfluxDB Organization
 
 Influx v2 Bucket: Your InfluxDB Bucket
 
-![](https://i.imgur.com/VS4FKU7.png)
+![](https://www.bsmithio.com/post/opnsense-dashboard/influxbucket.png)
 
 Then click Save.
+
+
+### Alternative OPNSense Configuration via Ansible
+
+You can use Ansible to automate a few sections. Install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html) on your linux server and use the files at https://github.com/bsmithio/OPNsense-Dashboard/tree/master/ansible. If you use this method you can skip these sections: Add telegraf to sudoers, Telegraf Plugins, and Configuration for the Suricata dashboard.
 
 ### Add telegraf to sudoers
 
@@ -186,11 +191,7 @@ Ensure that all of these are enabled, and click save.
 
 Once that is all done, login to your OPNsense router and navigate to System -> Settings -> Logging / targets. Add a new target with the following options:
 
-![OPNsense Syslog Target](https://www.bsmithio.com/post/opnsense-dashboard/opnsensesyslog.png)
-
-If you are on OPNsense 22.1+ use the following options:
-
-![OPNsense 22.1+ Syslog Target](https://i.imgur.com/1oAMcde.png)
+![OPNsense Syslog Target](https://i.nuuls.com/XQATf.png)
 
 Add a description if you'd like, then click save.
 
@@ -362,4 +363,11 @@ curl https://raw.githubusercontent.com/3CORESec/testmynids.org/master/tmNIDS -o 
 ```
 
 You can then run the tests through the CLI.
-![](https://i.imgur.com/PhoKWxN.png)
+![](https://www.bsmithio.com/post/opnsense-dashboard/tmnids.png)
+
+### Map Issues
+
+If you see no GeoIP data on the map make sure you rearranged the Message Processors in System -> Configurations, and reorder like so:
+
+![Graylog Message Processors](https://www.bsmithio.com/post/opnsense-dashboard/processors.png)
+
